@@ -1,0 +1,232 @@
+--- rpmbuild-base/SPECS/openssl.spec	2013-03-18 14:14:57.000000000 -0700
++++ rpmbuild-bare/SPECS/openssl-freeworld.spec	2013-06-12 23:27:03.000000000 -0700
+@@ -19,15 +19,11 @@
+ %define multilib_arches %{ix86} ia64 ppc %{power64} s390 s390x sparcv9 sparc64 x86_64
+ 
+ Summary: Utilities from the general purpose cryptography library with TLS implementation
+-Name: openssl
++Name: openssl-freeworld
+ Version: 1.0.1e
+ Release: 4%{?dist}
+ Epoch: 1
+-# We have to remove certain patented algorithms from the openssl source
+-# tarball with the hobble-openssl script which is included below.
+-# The original openssl upstream tarball cannot be shipped in the .src.rpm.
+-Source: openssl-%{version}-usa.tar.xz
+-Source1: hobble-openssl
++Source: openssl-%{version}.tar.gz
+ Source2: Makefile.certificate
+ Source6: make-dummy-cert
+ Source7: renew-dummy-cert
+@@ -35,6 +31,8 @@
+ Source9: opensslconf-new.h
+ Source10: opensslconf-new-warning.h
+ Source11: README.FIPS
++Source12: openssl-freeworld.conf
++Source13: README.freeworld
+ # Build changes
+ Patch1: openssl-1.0.1-beta2-rpmbuild.patch
+ Patch2: openssl-1.0.0f-defaults.patch
+@@ -54,13 +52,13 @@
+ Patch36: openssl-1.0.0e-doc-noeof.patch
+ Patch38: openssl-1.0.1-beta2-ssl-op-all.patch
+ Patch39: openssl-1.0.1c-ipv6-apps.patch
+-Patch40: openssl-1.0.1e-fips.patch
++#Patch40: openssl-1.0.1e-fips.patch
+ Patch45: openssl-1.0.1e-env-zlib.patch
+ Patch47: openssl-1.0.0-beta5-readme-warning.patch
+ Patch49: openssl-1.0.1a-algo-doc.patch
+ Patch50: openssl-1.0.1-beta2-dtls1-abi.patch
+ Patch51: openssl-1.0.1-version.patch
+-Patch56: openssl-1.0.0c-rsa-x931.patch
++#Patch56: openssl-1.0.0c-rsa-x931.patch
+ Patch58: openssl-1.0.1-beta2-fips-md5-allow.patch
+ Patch60: openssl-1.0.0d-apps-dgst.patch
+ Patch63: openssl-1.0.0d-xmpp-starttls.patch
+@@ -72,6 +70,7 @@
+ Patch81: openssl-1.0.1-beta2-padlock64.patch
+ Patch82: openssl-1.0.1e-backports.patch
+ Patch83: openssl-1.0.1e-bad-mac.patch
++Patch84: openssl-1.0.1e-freeworld.patch
+ 
+ License: OpenSSL
+ Group: System Environment/Libraries
+@@ -135,11 +134,8 @@
+ from other formats to the formats used by the OpenSSL toolkit.
+ 
+ %prep
+-%setup -q -n %{name}-%{version}
++%setup -q -n openssl-%{version}
+ 
+-# The hobble_openssl is called here redundantly, just to be sure.
+-# The tarball has already the sources removed.
+-%{SOURCE1} > /dev/null
+ %patch1 -p1 -b .rpmbuild
+ %patch2 -p1 -b .defaults
+ %patch4 -p1 -b .enginesdir %{?_rawbuild}
+@@ -152,30 +148,31 @@
+ %patch23 -p1 -b .default-paths
+ %patch24 -p1 -b .issuer-hash
+ 
+-%patch33 -p1 -b .ca-dir
+ %patch34 -p1 -b .x509
+ %patch35 -p1 -b .version-add-engines
+ %patch36 -p1 -b .doc-noeof
+ %patch38 -p1 -b .op-all
+ %patch39 -p1 -b .ipv6-apps
+-%patch40 -p1 -b .fips
++#%patch40 -p1 -b .fips
+ %patch45 -p1 -b .env-zlib
+ %patch47 -p1 -b .warning
+ %patch49 -p1 -b .algo-doc
+ %patch50 -p1 -b .dtls1-abi
+ %patch51 -p1 -b .version
+-%patch56 -p1 -b .x931
+-%patch58 -p1 -b .md5-allow
++#%patch56 -p1 -b .x931
++#%patch58 -p1 -b .md5-allow
+ %patch60 -p1 -b .dgst
+ %patch63 -p1 -b .starttls
+ %patch65 -p1 -b .chil
+ %patch66 -p1 -b .krb5
+-%patch68 -p1 -b .secure-getenv
++#%patch68 -p1 -b .secure-getenv
+ %patch69 -p1 -b .dh1024
+ 
+ %patch81 -p1 -b .padlock64
+ %patch82 -p1 -b .backports
+ %patch83 -p1 -b .bad-mac
++%patch84 -p1 -b .freeworld
++%patch33 -p1 -b .ca-dir
+ 
+ sed -i 's/SHLIB_VERSION_NUMBER "1.0.0"/SHLIB_VERSION_NUMBER "%{version}"/' crypto/opensslv.h
+ 
+@@ -227,9 +224,12 @@
+ ./Configure \
+ 	--prefix=/usr --openssldir=%{_sysconfdir}/pki/tls ${sslflags} \
+ 	zlib enable-camellia enable-seed enable-tlsext enable-rfc3779 \
+-	enable-cms enable-md2 no-mdc2 no-rc5 no-ec no-ec2m no-ecdh no-ecdsa no-srp \
+-	--with-krb5-flavor=MIT --enginesdir=%{_libdir}/openssl/engines \
+-	--with-krb5-dir=/usr shared  ${sslarch} %{?!nofips:fips}
++	enable-cms enable-md2 no-mdc2 no-rc5 no-srp \
++	--with-krb5-flavor=MIT --enginesdir=%{_libdir}/openssl-freeworld/engines \
++	--with-krb5-dir=/usr shared  ${sslarch}
++
++#	--with-krb5-dir=/usr shared  ${sslarch} %{?!nofips:fips}
++#	enable-cms enable-md2 no-mdc2 no-rc5 no-ec no-ec2m no-ecdh no-ecdsa no-srp \
+ 
+ # Add -Wa,--noexecstack here so that libcrypto's assembler modules will be
+ # marked as not requiring an executable stack.
+@@ -245,6 +245,10 @@
+ # Overwrite FIPS README
+ cp -f %{SOURCE11} .
+ 
++# Openssl-freeworld
++cp %{SOURCE12} .
++cp %{SOURCE13} .
++
+ %check
+ # Verify that what was compiled actually works.
+ 
+@@ -270,29 +274,30 @@
+     %{?__debug_package:%{__debug_install_post}} \
+     %{__arch_install_post} \
+     %{__os_install_post} \
+-    crypto/fips/fips_standalone_hmac $RPM_BUILD_ROOT%{_libdir}/libcrypto.so.%{version} >$RPM_BUILD_ROOT%{_libdir}/.libcrypto.so.%{version}.hmac \
+-    ln -sf .libcrypto.so.%{version}.hmac $RPM_BUILD_ROOT%{_libdir}/.libcrypto.so.%{soversion}.hmac \
+-    crypto/fips/fips_standalone_hmac $RPM_BUILD_ROOT%{_libdir}/libssl.so.%{version} >$RPM_BUILD_ROOT%{_libdir}/.libssl.so.%{version}.hmac \
+-    ln -sf .libssl.so.%{version}.hmac $RPM_BUILD_ROOT%{_libdir}/.libssl.so.%{soversion}.hmac \
++    #crypto/fips/fips_standalone_hmac $RPM_BUILD_ROOT%{_libdir}/libcrypto.so.%{version} >$RPM_BUILD_ROOT%{_libdir}/.libcrypto.so.%{version}.hmac \
++    #ln -sf .libcrypto.so.%{version}.hmac $RPM_BUILD_ROOT%{_libdir}/.libcrypto.so.%{soversion}.hmac \
++    #crypto/fips/fips_standalone_hmac $RPM_BUILD_ROOT%{_libdir}/libssl.so.%{version} >$RPM_BUILD_ROOT%{_libdir}/.libssl.so.%{version}.hmac \
++    #ln -sf .libssl.so.%{version}.hmac $RPM_BUILD_ROOT%{_libdir}/.libssl.so.%{soversion}.hmac \
+ %{nil}
+ 
+-%define __provides_exclude_from %{_libdir}/openssl
++%define __provides_exclude_from %{_libdir}
+ 
+ %install
+ [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+ # Install OpenSSL.
+-install -d $RPM_BUILD_ROOT{%{_bindir},%{_includedir},%{_libdir},%{_mandir},%{_libdir}/openssl}
++install -d $RPM_BUILD_ROOT{%{_bindir},%{_includedir},%{_libdir},%{_mandir},%{_libdir}/openssl-freeworld}
+ make INSTALL_PREFIX=$RPM_BUILD_ROOT install
+ make INSTALL_PREFIX=$RPM_BUILD_ROOT install_docs
+-mv $RPM_BUILD_ROOT%{_libdir}/engines $RPM_BUILD_ROOT%{_libdir}/openssl
++mv $RPM_BUILD_ROOT%{_libdir}/engines $RPM_BUILD_ROOT%{_libdir}/openssl-freeworld
++mv $RPM_BUILD_ROOT%{_libdir}/lib* $RPM_BUILD_ROOT%{_libdir}/openssl-freeworld
+ mv $RPM_BUILD_ROOT%{_sysconfdir}/pki/tls/man/* $RPM_BUILD_ROOT%{_mandir}/
+ rmdir $RPM_BUILD_ROOT%{_sysconfdir}/pki/tls/man
+-rename so.%{soversion} so.%{version} $RPM_BUILD_ROOT%{_libdir}/*.so.%{soversion}
++rename so.%{soversion} so.%{version} $RPM_BUILD_ROOT%{_libdir}/openssl-freeworld/*.so.%{soversion}
+ mkdir $RPM_BUILD_ROOT/%{_lib}
+-for lib in $RPM_BUILD_ROOT%{_libdir}/*.so.%{version} ; do
++for lib in $RPM_BUILD_ROOT%{_libdir}/openssl-freeworld/*.so.%{version} ; do
+ 	chmod 755 ${lib}
+-	ln -s -f `basename ${lib}` $RPM_BUILD_ROOT%{_libdir}/`basename ${lib} .%{version}`
+-	ln -s -f `basename ${lib}` $RPM_BUILD_ROOT%{_libdir}/`basename ${lib} .%{version}`.%{soversion}
++	ln -s -f `basename ${lib}` $RPM_BUILD_ROOT%{_libdir}/openssl-freeworld/`basename ${lib} .%{version}`
++	ln -s -f `basename ${lib}` $RPM_BUILD_ROOT%{_libdir}/openssl-freeworld/`basename ${lib} .%{version}`.%{soversion}
+ done
+ 
+ # Install a makefile for generating keys and self-signed certs, and a script
+@@ -338,7 +343,7 @@
+ 
+ # Ensure the openssl.cnf timestamp is identical across builds to avoid
+ # mulitlib conflicts and unnecessary renames on upgrade
+-touch -r %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pki/tls/openssl.cnf
++touch -r %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pki/tls/openssl-freeworld.cnf
+ 
+ # Determine which arch opensslconf.h is going to try to #include.
+ basearch=%{_arch}
+@@ -397,29 +402,30 @@
+ %files libs
+ %defattr(-,root,root)
+ %doc LICENSE
++%doc openssl-freeworld.conf README.freeworld
+ %dir %{_sysconfdir}/pki/tls
+ %dir %{_sysconfdir}/pki/tls/certs
+ %dir %{_sysconfdir}/pki/tls/misc
+ %dir %{_sysconfdir}/pki/tls/private
+-%config(noreplace) %{_sysconfdir}/pki/tls/openssl.cnf
+-%attr(0755,root,root) %{_libdir}/libcrypto.so.%{version}
+-%attr(0755,root,root) %{_libdir}/libcrypto.so.%{soversion}
+-%attr(0755,root,root) %{_libdir}/libssl.so.%{version}
+-%attr(0755,root,root) %{_libdir}/libssl.so.%{soversion}
+-%attr(0644,root,root) %{_libdir}/.libcrypto.so.*.hmac
+-%attr(0644,root,root) %{_libdir}/.libssl.so.*.hmac
+-%attr(0755,root,root) %{_libdir}/openssl
++%config(noreplace) %{_sysconfdir}/pki/tls/openssl-freeworld.cnf
++%attr(0755,root,root) %{_libdir}/openssl-freeworld/libcrypto.so.%{version}
++%attr(0755,root,root) %{_libdir}/openssl-freeworld/libcrypto.so.%{soversion}
++%attr(0755,root,root) %{_libdir}/openssl-freeworld/libssl.so.%{version}
++%attr(0755,root,root) %{_libdir}/openssl-freeworld/libssl.so.%{soversion}
++#%attr(0644,root,root) %{_libdir}/.libcrypto.so.*.hmac
++#%attr(0644,root,root) %{_libdir}/.libssl.so.*.hmac
++%attr(0755,root,root) %{_libdir}/openssl-freeworld/engines
+ 
+ %files devel
+ %defattr(-,root,root)
+ %{_prefix}/include/openssl
+-%attr(0755,root,root) %{_libdir}/*.so
++%attr(0755,root,root) %{_libdir}/openssl-freeworld/*.so
+ %attr(0644,root,root) %{_mandir}/man3*/*
+ %attr(0644,root,root) %{_libdir}/pkgconfig/*.pc
+ 
+ %files static
+ %defattr(-,root,root)
+-%attr(0644,root,root) %{_libdir}/*.a
++%attr(0644,root,root) %{_libdir}/openssl-freeworld/*.a
+ 
+ %files perl
+ %defattr(-,root,root)
+@@ -433,6 +439,9 @@
+ %postun libs -p /sbin/ldconfig
+ 
+ %changelog
++* Wed Jun 12 2013 Jeff Mendoza <jeffmendoza@live.com> 1.0.1e-4
++- Converted to openssl-freeworld
++
+ * Mon Mar 18 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-4
+ - fix random bad record mac errors (#918981)
+ 
