@@ -1,0 +1,95 @@
+
+
+make INSTALL_PREFIX = where to install, like rpm build root
+
+rpm uses configure with:
+
+--prefix = /usr
+--openssldir = /etc/pki/tls
+
+in openssldir:
+openssl.cnf
+certs/
+man/...
+misc/...
+private/
+
+in prefix:
+lib64/libs...
+lib64/engines/...
+lib64/pkgconfig/...
+include/openssl/...
+bin/...
+
+  --prefix=DIR  Install in DIR/bin, DIR/lib, DIR/include/openssl.
+	        Configuration files used by OpenSSL will be in DIR/ssl
+                or the directory specified by --openssldir.
+
+  --openssldir=DIR Directory for OpenSSL files. If no prefix is specified,
+                the library files and binaries are also installed there.
+
+
+  4. If everything tests ok, install OpenSSL with
+
+       $ make install
+
+     This will create the installation directory (if it does not exist) and
+     then the following subdirectories:
+
+       certs           Initially empty, this is the default location
+                       for certificate files.
+       man/man1        Manual pages for the 'openssl' command line tool
+       man/man3        Manual pages for the libraries (very incomplete)
+       misc            Various scripts.
+       private         Initially empty, this is the default location
+                       for private key files.
+
+     If you didn't choose a different installation prefix, the
+     following additional subdirectories will be created:
+
+       bin             Contains the openssl binary and a few other 
+                       utility programs. 
+       include/openssl Contains the header files needed if you want to
+                       compile programs with libcrypto or libssl.
+       lib             Contains the OpenSSL library files themselves.
+
+     Use "make install_sw" to install the software without documentation,
+     and "install_docs_html" to install HTML renditions of the manual
+     pages.
+
+     Package builders who want to configure the library for standard
+     locations, but have the package installed somewhere else so that
+     it can easily be packaged, can use
+
+       $ make INSTALL_PREFIX=/tmp/package-root install
+
+     (or specify "--install_prefix=/tmp/package-root" as a configure
+     option).  The specified prefix will be prepended to all
+     installation target filenames.
+
+
+
+in openssl rpm:
+
+/etc/pki/tls/...
+/etc/pki/CA/...
+/usr/bin/openssl
+/usr/share/doc/{%name}/...
+/usr/share/man/...
+
+in openssl-libs rpm:
+
+/etc/pki/tls/...
+/etc/pki/tls/openssl.cnf
+/usr/lib64/libs...
+/usr/lib64/openssl/engines/...
+/usr/share/doc/{%name}/...
+
+
+in openssl-devel rpm:
+
+/usr/include/opnessl/*
+/usr/lib64/libs...
+/usr/lib64/pkgconfig/lib..
+/usr/share/man/...
+
