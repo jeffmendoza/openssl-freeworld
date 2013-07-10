@@ -156,19 +156,19 @@ from other formats to the formats used by the OpenSSL toolkit.
 %patch36 -p1 -b .doc-noeof
 %patch38 -p1 -b .op-all
 %patch39 -p1 -b .ipv6-apps
-#%patch40 -p1 -b .fips
+#%%patch40 -p1 -b .fips
 %patch45 -p1 -b .env-zlib
 %patch47 -p1 -b .warning
 %patch49 -p1 -b .algo-doc
 %patch50 -p1 -b .dtls1-abi
 %patch51 -p1 -b .version
-#%patch56 -p1 -b .x931
-#%patch58 -p1 -b .md5-allow
+#%%patch56 -p1 -b .x931
+#%%patch58 -p1 -b .md5-allow
 %patch60 -p1 -b .dgst
 %patch63 -p1 -b .starttls
 %patch65 -p1 -b .chil
 %patch66 -p1 -b .krb5
-#%patch68 -p1 -b .secure-getenv
+#%%patch68 -p1 -b .secure-getenv
 %patch69 -p1 -b .dh1024
 
 %patch81 -p1 -b .padlock64
@@ -274,10 +274,6 @@ make -C test apps tests
     %{?__debug_package:%{__debug_install_post}} \
     %{__arch_install_post} \
     %{__os_install_post} \
-    #crypto/fips/fips_standalone_hmac $RPM_BUILD_ROOT%{_libdir}/libcrypto.so.%{version} >$RPM_BUILD_ROOT%{_libdir}/.libcrypto.so.%{version}.hmac \
-    #ln -sf .libcrypto.so.%{version}.hmac $RPM_BUILD_ROOT%{_libdir}/.libcrypto.so.%{soversion}.hmac \
-    #crypto/fips/fips_standalone_hmac $RPM_BUILD_ROOT%{_libdir}/libssl.so.%{version} >$RPM_BUILD_ROOT%{_libdir}/.libssl.so.%{version}.hmac \
-    #ln -sf .libssl.so.%{version}.hmac $RPM_BUILD_ROOT%{_libdir}/.libssl.so.%{soversion}.hmac \
 %{nil}
 
 %define __provides_exclude_from %{_libdir}
@@ -412,8 +408,6 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %attr(0755,root,root) %{_libdir}/openssl-freeworld/libcrypto.so.%{soversion}
 %attr(0755,root,root) %{_libdir}/openssl-freeworld/libssl.so.%{version}
 %attr(0755,root,root) %{_libdir}/openssl-freeworld/libssl.so.%{soversion}
-#%attr(0644,root,root) %{_libdir}/.libcrypto.so.*.hmac
-#%attr(0644,root,root) %{_libdir}/.libssl.so.*.hmac
 %attr(0755,root,root) %{_libdir}/openssl-freeworld/engines
 
 %files devel

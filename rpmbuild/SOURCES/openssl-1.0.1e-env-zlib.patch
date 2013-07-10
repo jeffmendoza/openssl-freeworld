@@ -18,12 +18,21 @@ diff -up openssl-1.0.1e/doc/ssl/SSL_COMP_add_compression_method.pod.env-zlib ope
 diff -up openssl-1.0.1e/ssl/ssl_ciph.c.env-zlib openssl-1.0.1e/ssl/ssl_ciph.c
 --- openssl-1.0.1e/ssl/ssl_ciph.c.env-zlib	2013-02-11 16:26:04.000000000 +0100
 +++ openssl-1.0.1e/ssl/ssl_ciph.c	2013-02-19 16:37:36.163545085 +0100
-@@ -455,7 +455,7 @@ static void load_builtin_compressions(vo
+@@ -140,6 +140,8 @@
+  * OTHERWISE.
+  */
+ 
++/* for secure_getenv */
++#define _GNU_SOURCE
+ #include <stdio.h>
+ #include <openssl/objects.h>
+ #ifndef OPENSSL_NO_COMP
+@@ -455,7 +457,7 @@ static void load_builtin_compressions(vo
  
  			MemCheck_off();
  			ssl_comp_methods=sk_SSL_COMP_new(sk_comp_cmp);
 -			if (ssl_comp_methods != NULL)
-+			if (ssl_comp_methods != NULL && __secure_getenv("OPENSSL_DEFAULT_ZLIB") != NULL)
++			if (ssl_comp_methods != NULL && secure_getenv("OPENSSL_DEFAULT_ZLIB") != NULL)
  				{
  				comp=(SSL_COMP *)OPENSSL_malloc(sizeof(SSL_COMP));
  				if (comp != NULL)
